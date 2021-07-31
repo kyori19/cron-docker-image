@@ -1,0 +1,44 @@
+name: build
+
+on:
+  push:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - uses: actions/checkout@v2
+
+      - uses: docker/setup-qemu-action@v1
+
+      - uses: docker/setup-buildx-action@v1
+
+      - uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v2
+        with:
+          context: ./debian
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: |
+            kyori/cron:latest
+            kyori/cron:debian
+          cache-from: |
+            kyori/cron:debian
+          cache-to: type=inline,mode=max
+
+      - uses: docker/build-push-action@v2
+        with:
+          context: ./alpine
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: |
+            kyori/cron:alpine
+          cache-from: |
+            kyori/cron:alpine
+          cache-to: type=inline,mode=max
